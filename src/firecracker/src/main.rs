@@ -92,9 +92,8 @@ impl From<MainError> for FcExitCode {
 
 fn main() -> ExitCode {
     #[cfg(feature = "debug_guard")]
-    {
-        println!("Hello, from Firecracker");
-    }
+    println!("Hello, from Firecracker");
+
     let result = main_exec();
     if let Err(err) = result {
         error!("{err}");
@@ -123,13 +122,10 @@ fn main_exec() -> Result<(), MainError> {
         // origin of the panic, including the payload passed to panic! and the source code location
         // from which the panic originated.
         #[cfg(feature = "debug_guard")]
-        {
-            error!("My Firecracker {}", info);
-        }
+        error!("My Firecracker {}", info);
+
         #[cfg(not(feature = "debug_guard"))]
-        {
-            error!("Firecracker {}", info);
-        }
+        error!("Firecracker {}", info);
 
         if let Err(err) = stdin.lock().set_canon_mode() {
             error!(
@@ -272,9 +268,7 @@ fn main_exec() -> Result<(), MainError> {
     arg_parser.parse_from_cmdline()?;
     let arguments = arg_parser.arguments();
     #[cfg(feature = "debug_guard")]
-    {
-        println!("arguments = {:#?}", arguments);
-    }
+    println!("arguments = {:#?}", arguments);
 
     if arguments.flag_present("help") {
         println!("Firecracker v{}\n", FIRECRACKER_VERSION);
@@ -306,9 +300,8 @@ fn main_exec() -> Result<(), MainError> {
         .set(String::from(instance_id))
         .unwrap();
     #[cfg(feature = "debug_guard")]
-    {
-        println!("vmm::logger::contents = {:?}", vmm::logger::INSTANCE_ID.get().unwrap());
-    }
+    println!("vmm::logger::contents = {:?}", vmm::logger::INSTANCE_ID.get().unwrap());
+
     let log_path = arguments.single_value("log-path").map(PathBuf::from);
     let level = arguments
         .single_value("level")
@@ -330,9 +323,7 @@ fn main_exec() -> Result<(), MainError> {
     info!("Running Firecracker v{FIRECRACKER_VERSION}");
 
     #[cfg(feature = "debug_guard")]
-    {
-        println!("LOGGER = {:?}", LOGGER.0.lock());
-    }
+    println!("LOGGER = {:?}", LOGGER.0.lock());
 
     register_signal_handlers().map_err(MainError::RegisterSignalHandlers)?;
 
@@ -365,9 +356,7 @@ fn main_exec() -> Result<(), MainError> {
     };
 
     #[cfg(feature = "debug_guard")]
-    {
-        println!("instance_info = {:?}", instance_info);
-    }
+    println!("instance_info = {:?}", instance_info);
 
     if let Some(metrics_path) = arguments.single_value("metrics-path") {
         let metrics_config = MetricsConfig {
@@ -384,14 +373,14 @@ fn main_exec() -> Result<(), MainError> {
     .map_err(MainError::SeccompFilter)?;
 
     #[cfg(feature = "debug_guard")]
-    {
-        println!("seccomp_filters = {:?}", seccomp_filters);
-    }
+    println!("seccomp_filters = {:?}", seccomp_filters);
 
     let vmm_config_json = arguments
         .single_value("config-file")
         .map(fs::read_to_string)
         .map(|x| x.expect("Unable to open or read from the configuration file"));
+    #[cfg(feature = "debug_guard")]
+    println!("vmm_config_json = {:?}", vmm_config_json);
 
     let metadata_json = arguments
         .single_value(MMDS_CONTENT_ARG)
@@ -400,6 +389,10 @@ fn main_exec() -> Result<(), MainError> {
 
     let boot_timer_enabled = arguments.flag_present("boot-timer");
     let api_enabled = !arguments.flag_present("no-api");
+
+    #[cfg(feature = "debug_guard")]
+    println!("boot_timer_enabled = {}. api_enabled = {}", boot_timer_enabled, api_enabled);
+
     let api_payload_limit = arg_parser
         .arguments()
         .single_value("http-api-max-payload-size")
@@ -409,6 +402,8 @@ fn main_exec() -> Result<(), MainError> {
         })
         // Safe to unwrap as we provide a default value.
         .unwrap();
+    #[cfg(feature = "debug_guard")]
+    println!("api_payload_limit = {}", api_payload_limit);
 
     // If the mmds size limit is not explicitly configured, default to using the
     // `http-api-max-payload-size` value.
