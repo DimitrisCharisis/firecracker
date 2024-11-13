@@ -203,6 +203,12 @@ pub(crate) fn run_with_api(
     let firecracker_metrics = Arc::new(Mutex::new(super::metrics::PeriodicMetrics::new()));
     event_manager.add_subscriber(firecracker_metrics.clone());
 
+    #[cfg(feature = "debug_guard")]
+    {
+        println!("Before \"build_microvm_from_requests()\"");
+        println!("config_json = {:?}", config_json);
+    }
+
     // Configure, build and start the microVM.
     let build_result = match config_json {
         Some(json) => super::build_microvm_from_json(
@@ -234,6 +240,9 @@ pub(crate) fn run_with_api(
             .lock()
             .expect("Poisoned lock")
             .start(super::metrics::WRITE_METRICS_PERIOD_MS);
+
+        #[cfg(feature = "debug_guard")]
+        println!("ApiServerAdapter::run_microvm()");
 
         ApiServerAdapter::run_microvm(
             api_event_fd,

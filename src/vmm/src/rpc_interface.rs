@@ -330,6 +330,8 @@ impl<'a> PrebootApiController<'a> {
         mmds_size_limit: usize,
         metadata_json: Option<&str>,
     ) -> Result<(VmResources, Arc<Mutex<Vmm>>), BuildMicrovmFromRequestsError> {
+        println!("Hello from build_microvm_from_requests");
+
         let mut vm_resources = VmResources::default();
         // Silence false clippy warning. Clippy suggests using
         // VmResources { boot_timer: boot_timer_enabled, ..Default::default() }; but this will
@@ -360,10 +362,14 @@ impl<'a> PrebootApiController<'a> {
         // Iterate through API calls to configure microVm.
         // The loop breaks when a microVM is successfully started, and a running Vmm is built.
         while preboot_controller.built_vmm.is_none() {
+
+            println!("In while loop **before** receiving from API");
             // Get request
             let req = from_api
                 .recv()
                 .expect("The channel's sending half was disconnected. Cannot receive data.");
+
+            println!("In while loop **after** receiving from API");
 
             // Also consume the API event along with the message. It is safe to unwrap()
             // because this event_fd is blocking.

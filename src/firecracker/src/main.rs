@@ -387,6 +387,9 @@ fn main_exec() -> Result<(), MainError> {
         .map(fs::read_to_string)
         .map(|x| x.expect("Unable to open or read from the mmds content file"));
 
+    #[cfg(feature = "debug_guard")]
+    println!("metadata_json = {:?}", metadata_json);
+
     let boot_timer_enabled = arguments.flag_present("boot-timer");
     let api_enabled = !arguments.flag_present("no-api");
 
@@ -416,7 +419,11 @@ fn main_exec() -> Result<(), MainError> {
         })
         .unwrap_or_else(|| api_payload_limit);
 
+    #[cfg(feature = "debug_guard")]
+    println!("mmds_size_limit= {mmds_size_limit}");
+
     if api_enabled {
+
         let bind_path = arguments
             .single_value("api-sock")
             .map(PathBuf::from)
@@ -439,6 +446,28 @@ fn main_exec() -> Result<(), MainError> {
 
         let process_time_reporter =
             ProcessTimeReporter::new(start_time_us, start_time_cpu_us, parent_cpu_time_us);
+
+        #[cfg(feature = "debug_guard")]
+        println!("run_with_api() arguments:
+            \tseccomp_filtesrs      = {:?}
+            \tvmm_config_json       = {:?}
+            \tbind_path             = {:?}
+            \tinstance_info         = {:?}
+            \tprocess_time_reporter = {:?}
+            \tboot_timer_enabled    = {:?}
+            \tapi_payload_limit     = {:?}
+            \tmmds_size_limit       = {:?}
+            \tmetadata_json         = {:?}",
+            seccomp_filters,
+            vmm_config_json,
+            bind_path,
+            instance_info,
+            process_time_reporter,
+            boot_timer_enabled,
+            api_payload_limit,
+            mmds_size_limit,
+            metadata_json.as_deref(),
+            );
 
         api_server_adapter::run_with_api(
             &mut seccomp_filters,
@@ -588,6 +617,10 @@ fn build_microvm_from_json(
     mmds_size_limit: usize,
     metadata_json: Option<&str>,
 ) -> Result<(VmResources, Arc<Mutex<vmm::Vmm>>), BuildFromJsonError> {
+
+    #[cfg(feature = "debug_guard")]
+    println!("Hello, from build_microvm_from_json");
+
     let mut vm_resources =
         VmResources::from_json(&config_json, &instance_info, mmds_size_limit, metadata_json)
             .map_err(BuildFromJsonError::ParseFromJson)?;
