@@ -10,21 +10,22 @@ set -eu
 # [ -e hello-id_rsa ] || wget -O hello-id_rsa https://raw.githubusercontent.com/firecracker-microvm/firecracker-demo/ec271b1e5ffc55bd0bf0632d5260e96ed54b5c0c/xenial.rootfs.id_rsa
 
 arch=`uname -m`
-# dest_kernel="hello-vmlinux.bin"
-dest_kernel="vmlinux"
-dest_rootfs="hello-rootfs.ext4"
+dest_kernel="hello-vmlinux.bin"
+# dest_kernel="/home/dim/Documents/firecracker/resources/x86_64/vmlinux-6.1.102"
+# dest_rootfs="hello-rootfs.ext4"
+dest_rootfs="/home/dim/Documents/firecracker/resources/x86_64/ubuntu-22.04.ext4"
 image_bucket_url="https://s3.amazonaws.com/spec.ccfc.min/img/quickstart_guide/$arch"
 
-if [ ${arch} = "x86_64" ]; then
-#     kernel="${image_bucket_url}/kernels/vmlinux.bin"
-    rootfs="${image_bucket_url}/rootfs/bionic.rootfs.ext4"
-elif [ ${arch} = "aarch64" ]; then
-#     kernel="${image_bucket_url}/kernels/vmlinux.bin"
-    rootfs="${image_bucket_url}/rootfs/bionic.rootfs.ext4"
-else
-    echo "Cannot run firecracker on $arch architecture!"
-    exit 1
-fi
+# if [ ${arch} = "x86_64" ]; then
+#     # kernel="${image_bucket_url}/kernels/vmlinux.bin"
+#     # rootfs="${image_bucket_url}/rootfs/bionic.rootfs.ext4"
+# elif [ ${arch} = "aarch64" ]; then
+#     # kernel="${image_bucket_url}/kernels/vmlinux.bin"
+#     # rootfs="${image_bucket_url}/rootfs/bionic.rootfs.ext4"
+# else
+#     echo "Cannot run firecracker on $arch architecture!"
+#     exit 1
+# fi
 
 # if [ ! -f $dest_kernel ]; then
 #     echo "Kernel not found, downloading $kernel..."
@@ -32,11 +33,11 @@ fi
 #     echo "Saved kernel file to $dest_kernel."
 # fi
 
-if [ ! -f $dest_rootfs ]; then
-    echo "Rootfs not found, downloading $rootfs..."
-    curl -fsSL -o $dest_rootfs $rootfs
-    echo "Saved root block device to $dest_rootfs."
-fi
+# if [ ! -f $dest_rootfs ]; then
+#     echo "Rootfs not found, downloading $rootfs..."
+#     curl -fsSL -o $dest_rootfs $rootfs
+#     echo "Saved root block device to $dest_rootfs."
+# fi
 
 echo "Downloading public key file..."
 [ -e hello-id_rsa ] || wget -O hello-id_rsa https://raw.githubusercontent.com/firecracker-microvm/firecracker-demo/ec271b1e5ffc55bd0bf0632d5260e96ed54b5c0c/xenial.rootfs.id_rsa
@@ -72,7 +73,7 @@ cat <<EOF > vmconfig.json
   "drives": [
     {
       "drive_id": "rootfs",
-      "path_on_host": "hello-rootfs.ext4",
+      "path_on_host": "$dest_rootfs",
       "is_root_device": true,
       "is_read_only": false
     }
@@ -93,4 +94,3 @@ cat <<EOF > vmconfig.json
 EOF
 
 /home/dim/Documents/firecracker/build/cargo_target/debug/firecracker --no-api --config-file vmconfig.json
-
