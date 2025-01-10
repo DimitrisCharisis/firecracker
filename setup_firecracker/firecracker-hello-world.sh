@@ -10,10 +10,10 @@ set -eu
 # [ -e hello-id_rsa ] || wget -O hello-id_rsa https://raw.githubusercontent.com/firecracker-microvm/firecracker-demo/ec271b1e5ffc55bd0bf0632d5260e96ed54b5c0c/xenial.rootfs.id_rsa
 
 arch=`uname -m`
-dest_kernel="hello-vmlinux.bin"
+dest_kernel="/home/dim/Documents/firecracker/setup_firecracker/vmlinux3_v6_7"
 # dest_kernel="/home/dim/Documents/firecracker/resources/x86_64/vmlinux-6.1.102"
 # dest_rootfs="hello-rootfs.ext4"
-dest_rootfs="/home/dim/Documents/firecracker/resources/x86_64/ubuntu-22.04.ext4"
+dest_rootfs="/home/dim/Documents/firecracker/setup_firecracker/mycontainer.ext4"
 image_bucket_url="https://s3.amazonaws.com/spec.ccfc.min/img/quickstart_guide/$arch"
 
 # if [ ${arch} = "x86_64" ]; then
@@ -52,7 +52,7 @@ FC_IP="169.254.0.21"
 TAP_IP="169.254.0.22"
 FC_MAC="02:FC:00:00:00:05"
 
-KERNEL_BOOT_ARGS="ro console=ttyS0 noapic reboot=k panic=1 pci=off nomodules random.trust_cpu=on"
+KERNEL_BOOT_ARGS="ro console=ttyS0 nomodules random.trust_cpu=on reboot=k panic=1 pci=off root=/dev/vda"
 KERNEL_BOOT_ARGS="${KERNEL_BOOT_ARGS} ip=${FC_IP}::${TAP_IP}:${MASK_LONG}::eth0:off"
 
 # set up a tap network interface for the Firecracker VM
