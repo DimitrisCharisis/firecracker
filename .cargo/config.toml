@@ -1,8 +1,12 @@
 [build]
 target-dir = "build/cargo_target"
+target = "riscv64gc-unknown-linux-gnu"
 rustflags = [
   "-Ccodegen-units=1",
 ]
 
 [net]
 git-fetch-with-cli = true
+
+[target.riscv64gc-unknown-linux-gnu]
+linker = "riscv64-linux-gnu-gcc"
