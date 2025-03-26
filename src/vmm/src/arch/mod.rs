@@ -25,6 +25,23 @@ pub use aarch64::{
     layout::IRQ_MAX, layout::SYSTEM_MEM_SIZE, layout::SYSTEM_MEM_START,
 };
 
+/// Module for riscv64 related functionality.
+#[cfg(target_arch = "riscv64")]
+pub mod riscv64;
+
+#[cfg(target_arch = "riscv64")]
+pub use riscv64::kvm::{Kvm, KvmArchError};
+#[cfg(target_arch = "riscv64")]
+pub use riscv64::vcpu::*;
+#[cfg(target_arch = "riscv64")]
+pub use riscv64::vm::{ArchVm, ArchVmError, VmState};
+#[cfg(target_arch = "riscv64")]
+pub use riscv64::{
+    ConfigurationError, MMIO_MEM_SIZE, MMIO_MEM_START, arch_memory_regions, configure_system,
+    get_kernel_start, layout::CMDLINE_MAX_SIZE, layout::IRQ_BASE,
+    layout::IRQ_MAX, layout::SYSTEM_MEM_SIZE, layout::SYSTEM_MEM_START,
+};
+
 /// Module for x86_64 related functionality.
 #[cfg(target_arch = "x86_64")]
 pub mod x86_64;
