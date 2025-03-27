@@ -48,7 +48,7 @@ impl ArchVm {
     /// Creates the AIA (Advanced Interrupt Architecture) IRQchip.
     pub fn setup_irqchip(&mut self, vcpu_count: u8) -> Result<(), ArchVmError> {
         self.irqchip_handle = Some(
-            crate::arch::riscv64::aia::create_gic(&self.fd, vcpu_count.into(), None)
+            crate::arch::riscv64::aia::AIADevice::create_aia(&self.fd, vcpu_count.into())
                 .map_err(ArchVmError::VmCreateAIA)?,
         );
         Ok(())
@@ -61,7 +61,7 @@ impl ArchVm {
 
     /// Saves and returns the Kvm Vm state.
     pub fn save_state(&self) -> Result<VmState, ArchVmError> {
-        unimplmented!()
+        unimplemented!()
     }
 
     /// Restore the KVM VM state

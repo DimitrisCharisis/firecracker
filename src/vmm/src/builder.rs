@@ -579,7 +579,7 @@ fn load_kernel(
     })
 }
 
-#[cfg(target_arch = "aarch64")]
+#[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
 fn load_kernel(
     boot_config: &BootConfig,
     guest_memory: &GuestMemoryMmap,
@@ -603,6 +603,7 @@ fn load_kernel(
     })
 }
 
+#[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
 fn load_initrd_from_config(
     boot_cfg: &BootConfig,
     vm_memory: &GuestMemoryMmap,
@@ -618,12 +619,22 @@ fn load_initrd_from_config(
     })
 }
 
+#[cfg(target_arch = "riscv64")]
+fn load_initrd_from_config(
+    boot_cfg: &BootConfig,
+    vm_memory: &GuestMemoryMmap,
+) -> Result<Option<InitrdConfig>, StartMicrovmError> {
+    // TODO: We do not support initrd in RISCV yet
+    Ok(None)
+}
+
 /// Loads the initrd from a file into the given memory slice.
 ///
 /// * `vm_memory` - The guest memory the initrd is written to.
 /// * `image` - The initrd image.
 ///
 /// Returns the result of initrd loading
+#[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
 fn load_initrd<F>(
     vm_memory: &GuestMemoryMmap,
     image: &mut F,
@@ -764,6 +775,9 @@ pub fn configure_system_for_boot(
             .map_err(GuestConfigError)?;
         CpuConfiguration { regs }
     };
+
+    #[cfg(target_arch = "riscv64")]
+    let cpu_config = { CpuConfiguration };
 
     // Apply CPU template to the base CpuConfiguration.
     let cpu_config = CpuConfiguration::apply_template(cpu_config, cpu_template)?;

@@ -80,3 +80,9 @@ pub const IRQ_BASE: u32 = 1;
 
 /// Below this address will reside the AIA, above this address will reside the MMIO devices.
 pub const MAPPED_IO_START: u64 = 1 << 30; // 1 GB
+
+pub const IMSIC_START: u64 = 0x0800_0000;
+// IMISC size per hart
+pub const IMSIC_SZ_PH: u64 = 0x1000;
+
+pub const APLIC_START: u64 = 0x00;
