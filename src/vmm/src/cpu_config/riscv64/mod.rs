@@ -27,7 +27,7 @@ impl CpuConfiguration {
     /// Returns ids of registers that are changed
     /// by this template
     pub fn register_ids(&self) -> Vec<u64> {
-        self.regs.iter().map(|reg| reg.id).collect()
+        unimplemented!();
     }
 }
 

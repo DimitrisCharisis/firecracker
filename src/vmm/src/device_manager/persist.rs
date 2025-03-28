@@ -286,6 +286,7 @@ impl<'a> Persist<'a> for MMIODeviceManager {
     fn save(&self) -> Self::State {
         let mut states = DeviceStates::default();
         let _: Result<(), ()> = self.for_each_device(|devtype, devid, device_info, bus_dev| {
+            #[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
             if *devtype == crate::arch::DeviceType::BootTimer {
                 // No need to save BootTimer state.
                 return Ok(());

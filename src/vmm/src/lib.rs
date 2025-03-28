@@ -207,7 +207,7 @@ pub const HTTP_MAX_PAYLOAD_SIZE: usize = 51200;
 pub enum VmmError {
     /// Failed to allocate guest resource: {0}
     AllocateResources(#[from] vm_allocator::Error),
-    #[cfg(target_arch = "aarch64")]
+    #[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
     /// Invalid command line error.
     Cmdline,
     /// Device manager error: {0}
@@ -462,7 +462,7 @@ impl Vmm {
         // would be to save the whole serial device state when we do the vm
         // serialization. For now we set that bit manually
 
-        #[cfg(target_arch = "aarch64")]
+        #[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
         {
             let serial_bus_device = self.get_bus_device(DeviceType::Serial, "Serial");
             if serial_bus_device.is_none() {
@@ -526,6 +526,11 @@ impl Vmm {
                 let mpidrs = construct_kvm_mpidrs(&vcpu_states);
 
                 self.vm.save_state(&mpidrs).map_err(SaveVmState)?
+            }
+            #[cfg(target_arch = "riscv64")]
+            {
+                // TODO: Unimplemented
+                self.vm.save_state().map_err(SaveVmState)?
             }
         };
         let device_states = self.mmio_device_manager.save();

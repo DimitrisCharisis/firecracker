@@ -19,7 +19,7 @@ use linux_loader::loader::KernelLoader;
 use linux_loader::loader::elf::Elf as Loader;
 #[cfg(target_arch = "x86_64")]
 use linux_loader::loader::elf::PvhBootCapability;
-#[cfg(target_arch = "aarch64")]
+#[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
 use linux_loader::loader::pe::PE as Loader;
 use userfaultfd::Uffd;
 use utils::time::TimestampUs;
@@ -275,10 +275,12 @@ pub fn build_microvm_for_boot(
     // The boot timer device needs to be the first device attached in order
     // to maintain the same MMIO address referenced in the documentation
     // and tests.
+    #[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
     if vm_resources.boot_timer {
         attach_boot_timer_device(&mut vmm, request_ts)?;
     }
 
+    #[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
     if let Some(balloon) = vm_resources.balloon.get() {
         attach_balloon_device(&mut vmm, &mut boot_cmdline, balloon, event_manager)?;
     }
@@ -289,6 +291,7 @@ pub fn build_microvm_for_boot(
         vm_resources.block.devices.iter(),
         event_manager,
     )?;
+    #[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
     attach_net_devices(
         &mut vmm,
         &mut boot_cmdline,
@@ -296,10 +299,12 @@ pub fn build_microvm_for_boot(
         event_manager,
     )?;
 
+    #[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
     if let Some(unix_vsock) = vm_resources.vsock.get() {
         attach_unixsock_vsock_device(&mut vmm, &mut boot_cmdline, unix_vsock, event_manager)?;
     }
 
+    #[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
     if let Some(entropy) = vm_resources.entropy.get() {
         attach_entropy_device(&mut vmm, &mut boot_cmdline, entropy, event_manager)?;
     }
@@ -307,6 +312,10 @@ pub fn build_microvm_for_boot(
     #[cfg(target_arch = "aarch64")]
     attach_legacy_devices_aarch64(event_manager, &mut vmm, &mut boot_cmdline)?;
 
+    #[cfg(target_arch = "riscv64")]
+    attach_legacy_devices_riscv64(event_manager, &mut vmm, &mut boot_cmdline)?;
+
+    #[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
     attach_vmgenid_device(&mut vmm)?;
 
     configure_system_for_boot(
@@ -733,6 +742,35 @@ fn attach_legacy_devices_aarch64(
         .map_err(VmmError::RegisterMMIODevice)
 }
 
+#[cfg(target_arch = "riscv64")]
+fn attach_legacy_devices_riscv64(
+    event_manager: &mut EventManager,
+    vmm: &mut Vmm,
+    cmdline: &mut LoaderKernelCmdline,
+) -> Result<(), VmmError> {
+    // Serial device setup.
+    let cmdline_contains_console = cmdline
+        .as_cstring()
+        .map_err(|_| VmmError::Cmdline)?
+        .into_string()
+        .map_err(|_| VmmError::Cmdline)?
+        .contains("console=");
+
+    if cmdline_contains_console {
+        // Make stdout non-blocking.
+        set_stdout_nonblocking();
+        let serial = setup_serial_device(event_manager, std::io::stdin(), std::io::stdout())?;
+        vmm.mmio_device_manager
+            .register_mmio_serial(vmm.vm.fd(), &mut vmm.resource_allocator, serial, None)
+            .map_err(VmmError::RegisterMMIODevice)?;
+        vmm.mmio_device_manager
+            .add_mmio_serial_to_cmdline(cmdline)
+            .map_err(VmmError::RegisterMMIODevice)?;
+    }
+
+    Ok(())
+}
+
 /// Configures the system for booting Linux.
 #[cfg_attr(target_arch = "aarch64", allow(unused))]
 pub fn configure_system_for_boot(
@@ -890,6 +928,7 @@ fn attach_virtio_device<T: 'static + VirtioDevice + MutEventSubscriber + Debug>(
         .map(|_| ())
 }
 
+#[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
 pub(crate) fn attach_boot_timer_device(
     vmm: &mut Vmm,
     request_ts: TimestampUs,

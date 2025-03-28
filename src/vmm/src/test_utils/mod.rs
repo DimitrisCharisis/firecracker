@@ -44,6 +44,7 @@ pub fn arch_mem(mem_size_bytes: usize) -> GuestMemoryMmap {
     multi_region_mem(&crate::arch::arch_memory_regions(mem_size_bytes))
 }
 
+#[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
 pub fn create_vmm(
     _kernel_image: Option<&str>,
     is_diff: bool,
@@ -84,10 +85,12 @@ pub fn create_vmm(
     (vmm, event_manager)
 }
 
+#[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
 pub fn default_vmm(kernel_image: Option<&str>) -> (Arc<Mutex<Vmm>>, EventManager) {
     create_vmm(kernel_image, false, true)
 }
 
+#[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
 pub fn default_vmm_no_boot(kernel_image: Option<&str>) -> (Arc<Mutex<Vmm>>, EventManager) {
     create_vmm(kernel_image, false, false)
 }

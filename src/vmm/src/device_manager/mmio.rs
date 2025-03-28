@@ -264,7 +264,7 @@ impl MMIODeviceManager {
         Ok(device_info)
     }
 
-    #[cfg(target_arch = "aarch64")]
+    #[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
     /// Register an early console at the specified MMIO configuration if given as parameter,
     /// otherwise allocate a new MMIO resources for it.
     pub fn register_mmio_serial(
@@ -299,7 +299,7 @@ impl MMIODeviceManager {
         self.register_mmio_device(identifier, device_info, serial)
     }
 
-    #[cfg(target_arch = "aarch64")]
+    #[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
     /// Append the registered early console to the kernel cmdline.
     pub fn add_mmio_serial_to_cmdline(
         &self,
@@ -342,6 +342,7 @@ impl MMIODeviceManager {
     }
 
     /// Register a boot timer device.
+    #[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
     pub fn register_mmio_boot_timer(
         &mut self,
         resource_allocator: &mut ResourceAllocator,
