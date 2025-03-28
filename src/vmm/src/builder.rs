@@ -898,6 +898,29 @@ pub fn configure_system_for_boot(
         )
         .map_err(ConfigureSystem)?;
     }
+    #[cfg(target_arch = "riscv64")]
+    {
+        // Configure vCPUs with normalizing and setting the generated CPU configuration.
+        for vcpu in vcpus.iter_mut() {
+            vcpu.kvm_vcpu
+                .configure(
+                    vmm.guest_memory(),
+                    entry_point,
+                    &vcpu_config,
+                )
+                .map_err(VmmError::VcpuConfigure)?;
+        }
+        let cmdline = boot_cmdline.as_cstring()?;
+        crate::arch::riscv64::configure_system(
+            &vmm.guest_memory,
+            cmdline,
+            vmm.mmio_device_manager.get_device_info(),
+            vmm.vm.get_irqchip(),
+            &None,
+            &None,
+        )
+        .map_err(ConfigureSystem)?;
+    }
     Ok(())
 }
 

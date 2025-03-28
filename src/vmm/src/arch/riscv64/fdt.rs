@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::ffi::CString;
 
-use vm_fdt::{Error as VmFdtError, FdtWriter, FdtWriterNode};
+use vm_fdt::{Error as VmFdtError, FdtWriter};
 use vm_memory::GuestMemoryError;
 
 use super::super::DeviceType;

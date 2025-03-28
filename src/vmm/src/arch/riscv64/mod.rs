@@ -21,6 +21,7 @@ use vm_memory::GuestMemoryError;
 use crate::arch::DeviceType;
 use crate::arch::riscv64::aia::AIADevice;
 use crate::device_manager::mmio::MMIODeviceInfo;
+use crate::devices::acpi::vmgenid::VmGenId;
 use crate::vstate::memory::{Address, Bytes, GuestAddress, GuestMemory, GuestMemoryMmap};
 
 /// Errors thrown while configuring riscv64 system.
@@ -58,6 +59,8 @@ pub fn configure_system(
     cmdline_cstring: CString,
     device_info: &HashMap<(DeviceType, String), MMIODeviceInfo>,
     aia_device: &AIADevice,
+    _vmgenid: &Option<VmGenId>,
+    _initrd: &Option<super::InitrdConfig>,
 ) -> Result<(), ConfigurationError> {
     // TODO: get timer frequency appropriately
     let fdt = fdt::create_fdt(guest_mem, cmdline_cstring, 0x989680u32, device_info, aia_device)?;
